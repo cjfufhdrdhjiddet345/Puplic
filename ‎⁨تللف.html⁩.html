@@ -1,0 +1,64 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التقاط صورة تلقائيًا</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; direction: rtl; }
+        video { display: none; } /* إخفاء الفيديو */
+        img { width: 100%; max-width: 400px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <h1>جاري التقاط الصورة...</h1> <!-- رسالة تخبر المستخدم أن الكاميرا تعمل -->
+    <video id="video" autoplay></video>
+    <canvas id="canvas" style="display: none;"></canvas>
+    <img id="photo" alt="الصورة الملتقطة">
+
+    <script>
+        async function التقاط_وحفظ() {
+            const video = document.getElementById("video");
+            const canvas = document.getElementById("canvas");
+            const photo = document.getElementById("photo");
+
+            try {
+                // طلب الإذن بالكاميرا الأمامية
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                video.srcObject = stream;
+
+                // التقاط الصورة تلقائيًا بعد 3 ثوانٍ
+                setTimeout(() => {
+                    const context = canvas.getContext("2d");
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                    // حفظ الصورة في الموقع
+                    const imageData = canvas.toDataURL("image/png");
+                    photo.src = imageData;
+
+                    // إنشاء رابط تنزيل تلقائي
+                    const رابط_التنزيل = document.createElement("a");
+                    رابط_التنزيل.href = imageData;
+                    رابط_التنزيل.download = "الصورة.png"; // اسم الملف
+                    document.body.appendChild(رابط_التنزيل);
+                    رابط_التنزيل.click();
+                    document.body.removeChild(رابط_التنزيل);
+
+                    // إيقاف تشغيل الكاميرا بعد التقاط الصورة
+                    stream.getTracks().forEach(track => track.stop());
+
+                }, 3000); // بعد 3 ثوانٍ
+
+            } catch (error) {
+                alert("تم رفض الوصول إلى الكاميرا!"); // إذا لم يمنح المستخدم الإذن
+            }
+        }
+
+        التقاط_وحفظ(); // تشغيل الوظيفة تلقائيًا عند فتح الصفحة
+    </script>
+
+</body>
+</html>
